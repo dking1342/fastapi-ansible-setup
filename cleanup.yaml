@@ -1,0 +1,15 @@
+- name: Test setup
+  hosts: localhost
+  connection: local
+
+  tasks:
+    - name: Remove startup files and folders
+      ansible.builtin.shell: |
+        rm -fr migration
+        rm -fr startup
+        rm app.yaml
+        rm cleanup.yaml
+        rm README.md
+      args:
+        executable: /bin/sh
+      register: removal

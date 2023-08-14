@@ -1,0 +1,54 @@
+from uuid import UUID
+from fastapi import APIRouter, Depends
+from controllers import todos_controller
+from database import models, schemas, config
+from database.config import get_db
+from sqlalchemy.orm import Session
+from interfaces.responses import TodoResponse
+from . import exceptions
+
+router = APIRouter()
+
+
+@router.get("/", response_model=schemas.ResponseBase)
+def find_all(db: Session = Depends(get_db)):
+    todos = todos_controller.get_todos(db)
+    response: schemas.ResponseBase = TodoResponse(True, "Todos retrieved", todos).to_json()
+    return response
+
+
+@router.get("/{todo_id}", response_model=schemas.ResponseBase)
+def find_one(todo_id: UUID, db: Session = Depends(get_db)):
+    todo = todos_controller.get_todo(db, todo_id)
+    if todo is None:
+        return exceptions.exception_invalid_todo()
+
+    response: schemas.ResponseBase = TodoResponse(True, "Todo retrieved", todo).to_json()
+    return response
+
+
+@router.post("/", response_model=schemas.ResponseBase)
+def create(todo: schemas.TodoCreate, db: Session = Depends(get_db)):
+    new_todo = todos_controller.set_todo(todo, db)
+    response: schemas.ResponseBase = TodoResponse(True, "Todo added", new_todo).to_json()
+    return response
+
+
+@router.put("/{todo_id}", response_model=schemas.ResponseBase)
+def update(todo_id: UUID, todo: schemas.TodoUpdate, db: Session = Depends(get_db)):
+    updated_todo = todos_controller.update_todo(todo_id, todo, db)
+    if updated_todo is None:
+        return exceptions.exception_invalid_todo()
+
+    response: schemas.ResponseBase = TodoResponse(True, "Todo updated", updated_todo).to_json()
+    return response
+
+
+@router.delete("/{todo_id}", response_model=schemas.ResponseBase)
+def delete(todo_id: UUID, db: Session = Depends(get_db)):
+    deleted_todo = todos_controller.delete_todo(todo_id, db)
+    if deleted_todo is None:
+        return exceptions.exception_invalid_todo()
+
+    response: schemas.ResponseBase = TodoResponse(True, "Todo deleted", deleted_todo).to_json()
+    return response

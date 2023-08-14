@@ -1,0 +1,35 @@
+from pydantic import BaseModel
+from datetime import datetime
+from typing import Any
+from uuid import UUID
+
+
+class TodoBase(BaseModel):
+    name: str
+    status: bool
+
+
+class TodoCreate(TodoBase):
+    pass
+
+
+class TodoUpdate(TodoBase):
+    pass
+
+
+class Todo(TodoBase):
+    id: UUID
+
+    class Config:
+        orm_mode = True
+
+
+class ResponseBase(BaseModel):
+    timestamp: datetime = datetime.utcnow()
+    success: bool
+    message: str
+    data: Any
+
+    class Config:
+        orm_mode = True
+

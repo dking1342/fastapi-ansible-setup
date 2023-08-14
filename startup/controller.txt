@@ -1,0 +1,43 @@
+import uuid
+from sqlalchemy.orm import Session
+from database import models, schemas
+
+
+def get_todos(db: Session):
+    todos = db.query(models.Todo).all()
+    return todos
+
+
+def get_todo(db, todo_id):
+    todo = db.query(models.Todo).filter(models.Todo.id == todo_id).first()
+    return todo
+
+
+def set_todo(todo, db):
+    todo_id = uuid.uuid4()
+    new_todo = models.Todo(id=todo_id, name=todo.name, status=todo.status)
+    db.add(new_todo)
+    db.commit()
+    db.refresh(new_todo)
+    return new_todo
+
+
+def update_todo(todo_id, todo, db):
+    updated_todo = db.query(models.Todo).filter(models.Todo.id == todo_id).update(
+        {"name": todo.name, "status": todo.status}
+    )
+    if updated_todo:
+        db.commit()
+        up_todo = db.query(models.Todo).filter(models.Todo.id == todo_id).first()
+        return up_todo
+    else:
+        return None
+
+
+def delete_todo(todo_id, db):
+    todo = db.get(models.Todo, todo_id)
+    if todo is None:
+        return None
+    db.delete(todo)
+    db.commit()
+    return {"id": todo_id}

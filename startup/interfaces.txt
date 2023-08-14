@@ -1,0 +1,18 @@
+from datetime import datetime
+
+
+class TodoResponse:
+    def __init__(self, success, message, data):
+        self.success = success
+        self.message = message
+        self.data = data
+
+    def to_json(self):
+        return {
+            "timestamp": datetime.utcnow(),
+            "success": self.success,
+            "message": self.message,
+            "data": self.data,
+        }
+
+

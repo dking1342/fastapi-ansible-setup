@@ -1,0 +1,28 @@
+from datetime import datetime
+from fastapi.responses import JSONResponse
+
+
+def generic_exception_handler(code: int, message: str):
+    now: str = str(datetime.utcnow())
+    return JSONResponse(
+        status_code=code,
+        content={
+            "timestamp": now,
+            "success": False,
+            "message": message,
+            "status": code
+        }
+    )
+
+
+def exception_invalid_todo():
+    now: str = str(datetime.utcnow())
+    return JSONResponse(
+        status_code=404,
+        content={
+            "timestamp": now,
+            "success": False,
+            "message": "Invalid todo",
+            "status": 404
+        }
+    )

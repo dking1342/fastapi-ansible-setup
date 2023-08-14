@@ -1,0 +1,26 @@
+from datetime import datetime
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from routes import todos_routes
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+
+app = FastAPI()
+
+
+app.include_router(todos_routes.router, prefix="/api/v1/todos")
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    print(request)
+    now: str = str(datetime.utcnow())
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "timestamp": now,
+            "success": False,
+            "message": exc.detail,
+            "status": exc.status_code
+        }
+    )

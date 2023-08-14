@@ -1,0 +1,106 @@
+- name: Test setup
+  hosts: localhost
+  connection: local
+
+  tasks:
+    - name: Create a python virtual environment
+      ansible.builtin.shell: python3 -m venv venv
+      args:
+        executable: /bin/sh
+      register: venv
+
+    - name: Go into the virtual environment
+      ansible.builtin.shell: source venv/bin/activate
+      args:
+        executable: /bin/sh
+      register: source
+
+#    - name: Upgrade pip
+#      ansible.builtin.shell: pip install --upgrade pip
+#      args:
+#        executable: /bin/sh
+#      register: pip
+
+    - name: Install fastapi dependencies
+      ansible.builtin.shell: pip install fastapi "uvicorn[standard]"
+      args:
+        executable: /bin/sh
+      register: fastapideps
+
+    - name: Create env file and gitignore files
+      ansible.builtin.shell: |
+        touch .env .gitignore
+        cat ./startup/env.txt >> .env
+        cat ./startup/gitignore.txt >> .gitignore
+      args:
+        executable: /bin/sh
+      register: env
+
+    - name: Setup Alembic
+      ansible.builtin.shell: |
+        pip install sqlalchemy alembic sqlalchemy_utils
+        alembic init alembic
+        rm alembic.ini
+        touch alembic.ini
+        cat ./startup/alembic.txt >> alembic.ini
+        rm ./alembic/env.py
+        touch ./alembic/env.py
+        cat ./startup/alembicenv.txt >> ./alembic/env.py
+      args:
+        executable: /bin/sh
+      register: alembicinit
+
+    - name: Create model
+      ansible.builtin.shell: |
+        mkdir database
+        cd database
+        touch __init__.py config.py models.py schemas.py
+        cd ..
+        cat ./startup/databaseconfig.txt >> ./database/config.py
+        cat ./startup/databasemodels.txt >> ./database/models.py
+        cat ./startup/databaseschemas.txt >> ./database/schemas.py
+      args:
+        executable: /bin/sh
+      register: model
+
+    - name: Create controllers
+      ansible.builtin.shell: |
+        mkdir controllers
+        cd controllers
+        touch __init__.py todos_controller.py
+        cd ..
+        cat ./startup/controller.txt >> ./controllers/todos_controller.py
+      args:
+        executable: /bin/sh
+      register: controller
+
+    - name: Create interface
+      ansible.builtin.shell: |
+        mkdir interfaces
+        cd interfaces
+        touch __init__.py responses.py
+        cd ..
+        cat ./startup/interfaces.txt >> ./interfaces/responses.py
+      args:
+        executable: /bin/sh
+      register: interfaces
+
+    - name: Create routes
+      ansible.builtin.shell: |
+        mkdir routes
+        cd routes
+        touch __init__.py exceptions.py todos_routes.py
+        cd ..
+        cat ./startup/exceptions.txt >> ./routes/exceptions.py
+        cat ./startup/routes.txt >> ./routes/todos_routes.py
+      args:
+        executable: /bin/sh
+      register: routes
+
+    - name: Create main file
+      ansible.builtin.shell: |
+        touch main.py
+        cat ./startup/main.txt >> main.py
+      args:
+        executable: /bin/sh
+      register: main
